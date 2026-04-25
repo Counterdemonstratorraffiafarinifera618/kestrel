@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+Package.resolved
+Kestrel.app/
+LocalObs.app/
+*.xcodeproj
+.DS_Store
