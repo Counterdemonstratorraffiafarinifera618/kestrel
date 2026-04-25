@@ -3,5 +3,7 @@
 Package.resolved
 Kestrel.app/
 LocalObs.app/
+Kestrel-*.zip
+.last-sha256
 *.xcodeproj
 .DS_Store
