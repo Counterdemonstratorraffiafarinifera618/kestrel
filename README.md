@@ -2,11 +2,25 @@
 
 A tiny native macOS menu-bar recorder for **USB-C capture cards**. One job: take the video and audio coming in over a capture card (Elgato, AVerMedia, etc.), preview it live, and record it to a fragmented MP4 — HEVC video, AAC audio, hardware-encoded, high configurable bitrate, fully offline.
 
+## Install
+
+Via Homebrew (easiest):
+
+```bash
+brew tap dgr8akki/tap
+brew install --cask kestrel
+open -a Kestrel
+```
+
+The cask is ad-hoc codesigned and the postflight strips the quarantine attribute, so the app opens without a Gatekeeper warning. See `brew info --cask kestrel` for the full caveats.
+
+Or build from source — see [Build](#build) below.
+
 ## Requirements
 
 - macOS 14 (Sonoma) or newer
 - Apple Silicon (M-series). Tuned for M4.
-- Xcode 15+ command-line tools (`xcode-select --install`)
+- Xcode 15+ command-line tools (`xcode-select --install`) — only needed if you're building from source
 - A USB / USB-C video capture device that exposes itself as a UVC video device (the vast majority do)
 
 ## Build
@@ -141,3 +155,87 @@ ffmpeg -nostats -hide_banner -i "$F" -vf "mpdecimate=hi=64*4:lo=64*1:frac=0.05" 
 ```
 
 A real 4K60 capture has all PTS gaps at 0.01667s, ~60.0 measured fps, and close to 100% pixel-unique frames. Frame-padded sources (e.g. OBS recording a 30 fps source at 50 fps with 5:3 cadence) show the padding as ~60% mpdecimate-unique frames despite a clean 0.02000s PTS gap.
+
+## Releasing (maintainer)
+
+Cutting a new release means: build a versioned `.app`, attach the zip to a GitHub release on this repo, and bump two lines in [`dgr8akki/homebrew-tap`](https://github.com/dgr8akki/homebrew-tap) so `brew upgrade --cask kestrel` picks it up.
+
+### 1. Bump the version
+
+Edit `Resources/Info.plist` and bump `CFBundleShortVersionString` to the new version (e.g. `0.2.0`). Keep `CFBundleVersion` in sync if you bump the major.minor.
+
+### 2. Build the release artefact
+
+```bash
+./build.sh release
+
+# Zip with ditto (NOT plain zip — ditto preserves the codesign attributes
+# and resource forks; a regular zip will silently break Gatekeeper).
+VERSION=0.2.0
+ditto -c -k --sequesterRsrc --keepParent Kestrel.app "Kestrel-${VERSION}.zip"
+
+# Confirm the zip is good and grab its sha256 — you'll need it for the cask.
+codesign -v Kestrel.app && echo "codesign OK"
+shasum -a 256 "Kestrel-${VERSION}.zip"
+```
+
+`Kestrel-*.zip` and `.last-sha256` are gitignored, so they stay local.
+
+### 3. Tag and push
+
+```bash
+git tag -a v${VERSION} -m "Kestrel v${VERSION}"
+git push origin v${VERSION}
+```
+
+### 4. Create the GitHub release
+
+Open https://github.com/dgr8akki/kestrel/releases/new
+
+- **Choose a tag**: pick the `v${VERSION}` you just pushed.
+- **Release title**: `Kestrel v${VERSION}`.
+- **Description**: brief changelog.
+- **Assets**: drag `Kestrel-${VERSION}.zip` into the uploader.
+- Click **Publish release**.
+
+After publishing, the asset is downloadable at:
+`https://github.com/dgr8akki/kestrel/releases/download/v${VERSION}/Kestrel-${VERSION}.zip`
+
+### 5. Update the Homebrew cask
+
+In [`dgr8akki/homebrew-tap`](https://github.com/dgr8akki/homebrew-tap), edit `Casks/kestrel.rb` and change exactly two lines:
+
+```ruby
+version "0.2.0"
+sha256  "<the sha256 from step 2>"
+```
+
+The `url` is interpolated from `version` so it doesn't need touching. Then:
+
+```bash
+cd ~/personal/homebrew-tap
+brew style ./Casks/kestrel.rb         # must pass cleanly
+git add Casks/kestrel.rb
+git commit -m "Bump kestrel to v${VERSION}"
+git push
+```
+
+### 6. Verify end-to-end
+
+```bash
+brew update
+brew upgrade --cask kestrel           # or `brew install --cask kestrel` for first install
+open -a Kestrel
+```
+
+Should land in `/Applications/Kestrel.app` with no Gatekeeper warning (the cask's postflight strips quarantine), and the new version should show in the menu-bar app's `About`.
+
+### 7. Smoke test before publishing
+
+If you want to test the cask before pushing the GitHub release (catches typos in the cask file):
+
+```bash
+HOMEBREW_NO_AUTO_UPDATE=1 brew install --cask --no-quarantine ./Casks/kestrel.rb
+```
+
+This installs from the local file but still pulls the zip from GitHub — so it only works once the release exists.
