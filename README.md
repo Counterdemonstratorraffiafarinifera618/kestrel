@@ -239,3 +239,7 @@ HOMEBREW_NO_AUTO_UPDATE=1 brew install --cask --no-quarantine ./Casks/kestrel.rb
 ```
 
 This installs from the local file but still pulls the zip from GitHub — so it only works once the release exists.
+
+## License
+
+[MIT](./LICENSE) © Aakash Pahuja.
